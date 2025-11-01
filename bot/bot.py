@@ -5,14 +5,17 @@ import logging
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
+from pathlib import Path
 
-from bot.api_client import APIClient
+from api_client import APIClient
 
 # === Load environment variables === #
 env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
 TOKEN = os.getenv("DISCORD_TOKEN")
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+FACTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/facts"
+EVENTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/events"
 
 # === Logging configuration === #
 logging.basicConfig(level=logging.INFO)
@@ -37,7 +40,7 @@ async def on_ready():
 @bot.tree.command(name="events", description="List upcoming club events.")
 async def events(interaction: discord.Interaction):
     await interaction.response.defer(thinking=True)
-    async with APIClient(API_BASE_URL) as api:
+    async with APIClient(EVENTS_ENDPOINT) as api:
         events = await api.get_events()
 
     if not events:
@@ -68,13 +71,47 @@ async def add_event(interaction: discord.Interaction, title: str, date: str, des
         return
 
     event_data = {"title": title, "date": date, "description": description, "location": location}
-    async with APIClient(API_BASE_URL) as api:
+    async with APIClient(EVENTS_ENDPOINT) as api:
         result = await api.create_event(event_data)
 
     if result:
         await interaction.response.send_message(f"✅ Event **'{title}'** added successfully!")
     else:
         await interaction.response.send_message("⚠️ Failed to add event.", ephemeral=True)
+
+
+# /update_event — update an existing event (Admin only)
+@bot.tree.command(name="update_event", description="Update an existing club event (Admin only).")
+@app_commands.describe(
+    event_id="ID of the event to update",
+    title="New title (optional)",
+    date="New date (optional)",
+    description="New description (optional)",
+    location="New location (optional)"
+)
+async def update_event(interaction: discord.Interaction, event_id: str, title: str = None, date: str = None, description: str = None, location: str = None):
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("❌ You lack permission to update events.", ephemeral=True)
+        return
+
+    # Build the payload with only provided fields
+    update_data = {}
+    if title: update_data["title"] = title
+    if date: update_data["date"] = date
+    if description: update_data["description"] = description
+    if location: update_data["location"] = location
+
+    if not update_data:
+        await interaction.response.send_message("⚠️ No fields provided to update.", ephemeral=True)
+        return
+
+    async with APIClient(EVENTS_ENDPOINT) as api:
+        updated = await api.update_event(event_id, update_data)
+
+    if updated:
+        await interaction.response.send_message(f"✅ Event **'{event_id}'** updated successfully!")
+    else:
+        await interaction.response.send_message("⚠️ Failed to update event (check ID or permissions).", ephemeral=True)
 
 
 # /remove_event — delete an event by ID
@@ -85,7 +122,7 @@ async def remove_event(interaction: discord.Interaction, event_id: str):
         await interaction.response.send_message("❌ You lack permission to remove events.", ephemeral=True)
         return
 
-    async with APIClient(API_BASE_URL) as api:
+    async with APIClient(EVENTS_ENDPOINT) as api:
         success = await api.delete_event(event_id)
 
     if success:
@@ -98,7 +135,7 @@ async def remove_event(interaction: discord.Interaction, event_id: str):
 @bot.tree.command(name="cyberfact", description="Get a random cybersecurity fact.")
 async def cyberfact(interaction: discord.Interaction):
     await interaction.response.defer(thinking=True)
-    async with APIClient(API_BASE_URL) as api:
+    async with APIClient(FACTS_ENDPOINT) as api:
         facts = await api.get_facts()
 
     if not facts:
@@ -115,7 +152,7 @@ async def cyberfact(interaction: discord.Interaction):
 @app_commands.checks.has_permissions(administrator=True)
 async def add_fact(interaction: discord.Interaction, fact: str):
     payload = {"content": fact}
-    async with APIClient(API_BASE_URL) as api:
+    async with APIClient(FACTS_ENDPOINT) as api:
         result = await api.create_fact(payload)
 
     if result:
@@ -130,6 +167,7 @@ async def help_command(interaction: discord.Interaction):
     embed = discord.Embed(title="📘 CyberBot Command List", color=discord.Color.green())
     embed.add_field(name="/events", value="List upcoming club events.", inline=False)
     embed.add_field(name="/add_event", value="Add a new event (Admin only).", inline=False)
+    embed.add_field(name="/update_event", value="Update an event (Admin only).", inline=False)
     embed.add_field(name="/remove_event", value="Remove an event (Admin only).", inline=False)
     embed.add_field(name="/cyberfact", value="Get a random cybersecurity fact.", inline=False)
     embed.add_field(name="/add_fact", value="Add a new fact (Admin only).", inline=False)

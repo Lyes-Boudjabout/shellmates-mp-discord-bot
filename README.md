@@ -55,7 +55,7 @@ shellmates-discord-bot/
 ## Features
 
 * Display upcoming club events (`/events`).
-* Add or remove events (Admin only: `/add_event`, `/remove_event`).
+* Add, Update or remove events (Admin only: `/add_event`, `/update_event`, `/remove_event`).
 * Fetch random cybersecurity facts (`/cyberfact`).
 * Add new facts (Admin only: `/add_fact`).
 * Fully async, API-driven architecture using `APIClient`.
@@ -83,22 +83,22 @@ cd shellmates-mp-discord-bot
 
 ```env
 DISCORD_TOKEN=YOUR_DISCORD_BOT_TOKEN
-API_BASE_URL=http://localhost:8000
+API_BASE_URL=YOUR_API_BASE_URL
 ```
 
 **Backend `.env` (`backend/.env`):**
 
 ```env
-MONGO_URI=mongodb://localhost:27017
-DB_NAME=cyberbot
-PORT=8000
+MONGO_URI=YOUR_MONGO_URI
+DB_NAME=YOUR_DB_NAME
+PORT=YOUR_PORT
 ```
 
 > ⚠️ Ensure that MongoDB is running locally or that your `MONGO_URI` points to a reachable MongoDB instance.
 
 ---
 
-### 3️⃣ Install Python Dependencies
+### 3️⃣ Install Python Dependencies And Run
 
 **Bot:**
 
@@ -107,46 +107,29 @@ cd bot
 python3 -m venv venv_bot
 source venv_bot/bin/activate
 pip install -r requirements.txt
+python3 -m bot
 ```
 
 **Backend:**
 
 ```bash
-cd ../backend
+cd backend
 python3 -m venv venv_backend
 source venv_backend/bin/activate
 pip install -r requirements.txt
+uvicorn main:app
 ```
 
-> 💡 Use separate virtual environments for bot and backend to avoid dependency conflicts.
+> 💡 Use separate virtual environments (which means 2 separate terminals) for bot and backend to avoid dependency conflicts.
 
 ---
-
-### 4️⃣ Run the Backend
-
-```bash
-cd backend
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-* Backend API will run at: `http://localhost:8000`
-* Must be started **before** the bot for proper API communication.
-
----
-
-### 5️⃣ Run the Bot
-
-```bash
-cd bot
-python3 -m bot.bot
-```
 
 * The bot will connect to Discord using your `DISCORD_TOKEN`.
-* Slash commands (`/events`, `/add_event`, `/remove_event`, `/cyberfact`, `/add_fact`) will be available in your server.
+* Slash commands (`/events`, `/add_event`, `/update_event`, `/remove_event`, `/cyberfact`, `/add_fact`) will be available in your server.
 
 ---
 
-### 6️⃣ Optional: Using Docker
+### 4️⃣ Optional: Using Docker
 
 If you prefer a containerized setup, ensure Docker and Docker Compose are installed:
 
@@ -196,6 +179,7 @@ docker-compose logs -f bot
 | --------------- | ----------------------------------- | ----------- |
 | `/events`       | List all upcoming events            | Everyone    |
 | `/add_event`    | Add a new event                     | Admin only  |
+| `/update_event` | Update a new event                  | Admin only  |
 | `/remove_event` | Remove an event                     | Admin only  |
 | `/cyberfact`    | Display a random cybersecurity fact | Everyone    |
 | `/add_fact`     | Add a new fact                      | Admin only  |
