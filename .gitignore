@@ -140,6 +140,8 @@ backend/.env
 .envrc
 .venv
 venv
+bot/venv_bot
+backend/venv_backend
 env/
 venv/
 ENV/
