@@ -139,6 +139,7 @@ backend/.env
 .env
 .envrc
 .venv
+venv
 env/
 venv/
 ENV/
