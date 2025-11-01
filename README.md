@@ -6,7 +6,7 @@ A modular Discord bot integrating a RESTful backend API for managing club events
 
 ## Overview
 
-The **CyberBot** combines:
+The **Shellmates Discord Bot** combines:
 
 * A **FastAPI backend** handling CRUD operations for events and cybersecurity facts with MongoDB persistence.
 * A **Discord bot** enabling users to view and manage events, retrieve cyber facts, and interact with the backend through slash commands.
@@ -64,7 +64,7 @@ shellmates-discord-bot/
 
 ---
 
-## CyberBot Quick Start Guide
+## Shellmates Discord Bot Quick Start Guide
 
 ---
 
