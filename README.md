@@ -23,18 +23,18 @@ shellmates-discord-bot/
 │   ├── main.py          # Backend entrypoint
 │   ├── app.py           # FastAPI app configuration
 │   ├── Dockerfile
-│   ├── .env
+│   ├── .env.example
 │   └── requirements.txt
 │
 ├── bot/               
 │   ├── bot.py           # Main bot with slash commands
 │   ├── api_client.py    # Async API client for backend communication
 │   ├── Dockerfile
+│   ├── .env.example
 │   └── requirements.txt
 │
 ├── docs/                
 ├── docker-compose.yml
-├── .env.example
 ├── README.md
 └── .gitignore
 ```
