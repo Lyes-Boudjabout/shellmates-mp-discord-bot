@@ -16,7 +16,7 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 FACTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/facts"
 EVENTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/events"
-
+JOKES_ENDPOINT = API_BASE_URL.rstrip('/')
 # === Logging configuration === #
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("CyberBot")
@@ -161,6 +161,36 @@ async def add_fact(interaction: discord.Interaction, fact: str):
         await interaction.response.send_message("⚠️ Failed to add fact.", ephemeral=True)
 
 
+# /cyberjoke — random joke
+@bot.tree.command(name="cyberjoke", description="Get a random cybersecurity joke.")
+async def cyberjoke(interaction: discord.Interaction):
+    await interaction.response.defer(thinking=True)
+    async with APIClient(JOKES_ENDPOINT) as api:
+        jokes = await api.get_jokes()
+
+    if not jokes:
+        await interaction.followup.send("📭 No cybersecurity jokes available.")
+        return
+
+    joke = random.choice(jokes)
+    await interaction.followup.send(f"💡 **Cyber joke:** {joke.get('content', str(joke))}")
+
+
+# /add_joke — add a joke (admin-only)
+@bot.tree.command(name="add_joke", description="Add a new cybersecurity joke (Admin only).")
+@app_commands.describe(joke="Enter the cybersecurity joke text")
+@app_commands.checks.has_permissions(administrator=True)
+async def add_joke(interaction: discord.Interaction, joke: str):
+    payload = {"content": joke}
+    async with APIClient(JOKES_ENDPOINT) as api:
+        result = await api.create_joke(payload)
+
+    if result:
+        await interaction.response.send_message("✅ Cybersecurity joke added successfully!", ephemeral=True)
+    else:
+        await interaction.response.send_message("⚠️ Failed to add joke.", ephemeral=True)
+
+
 # /help — list all commands
 @bot.tree.command(name="help", description="Display all available commands.")
 async def help_command(interaction: discord.Interaction):
@@ -171,12 +201,15 @@ async def help_command(interaction: discord.Interaction):
     embed.add_field(name="/remove_event", value="Remove an event (Admin only).", inline=False)
     embed.add_field(name="/cyberfact", value="Get a random cybersecurity fact.", inline=False)
     embed.add_field(name="/add_fact", value="Add a new fact (Admin only).", inline=False)
+    embed.add_field(name="/cyberjoke", value="Get a random cybersecurity joke.", inline=False)
+    embed.add_field(name="/add_joke", value="Add a new joke (Admin only).", inline=False)
     embed.add_field(name="/help", value="Show this help message.", inline=False)
     await interaction.response.send_message(embed=embed)
 
 
 # === Error Handler for Permissions === #
 @add_fact.error
+@add_joke.error
 @add_event.error
 @remove_event.error
 async def permission_error(interaction: discord.Interaction, error: Exception):

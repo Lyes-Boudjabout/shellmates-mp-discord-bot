@@ -111,3 +111,26 @@ class APIClient:
         """Delete a cybersecurity fact."""
         resp = await self._request("DELETE", f"/facts/{fact_id}")
         return bool(resp)
+
+# Cyber Joke CRUD
+
+    async def get_jokes(self) -> List[Dict[str, Any]]:
+        """Fetch all cybersecurity jokes."""
+        return await self._request("GET", "/jokes") or []
+
+    async def get_joke(self, joke_id: str) -> Optional[Dict[str, Any]]:
+        """Fetch a specific joke by ID."""
+        return await self._request("GET", f"/jokes/{joke_id}")
+
+    async def create_joke(self, joke_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Create a new cybersecurity joke."""
+        return await self._request("POST", "/jokes/", json=joke_data)
+
+    async def update_joke(self, joke_id: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Update a cybersecurity joke."""
+        return await self._request("PUT", f"/jokes/{joke_id}", json=update_data)
+
+    async def delete_joke(self, joke_id: str) -> bool:
+        """Delete a cybersecurity joke."""
+        resp = await self._request("DELETE", f"/jokes/{joke_id}")
+        return bool(resp)
