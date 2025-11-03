@@ -8,3 +8,6 @@ class Event(BaseModel):
 
 class Fact(BaseModel):
     content: str
+
+class Joke(BaseModel):
+    content: str
