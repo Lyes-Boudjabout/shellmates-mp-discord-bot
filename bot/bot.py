@@ -21,7 +21,7 @@ CHANNEL_ID = int(os.getenv("DAILY_FACT_CHANNEL_ID"))
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 FACTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/facts"
 EVENTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/events"
-JOKES_ENDPOINT = API_BASE_URL.rstrip('/')
+JOKES_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/jokes"
 QUIZ_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/quiz"
 
 # === Logging configuration === #
@@ -326,7 +326,9 @@ async def help_command(interaction: discord.Interaction):
 @add_fact.error
 @add_joke.error
 @add_event.error
+@update_event.error
 @remove_event.error
+@add_quiz.error
 async def permission_error(interaction: discord.Interaction, error: Exception):
     if isinstance(error, app_commands.errors.MissingPermissions):
         await interaction.response.send_message("❌ You lack administrator permissions.", ephemeral=True)

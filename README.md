@@ -18,7 +18,7 @@ The **Shellmates Discord Bot** combines:
 ```
 shellmates-discord-bot/
 ├── backend/         
-│   ├── api/             # Event & Fact endpoints
+│   ├── api/             # Event, Fact and Joke endpoints
 │   ├── database/        # MongoDB configuration
 │   ├── main.py          # Backend entrypoint
 │   ├── app.py           # FastAPI app configuration
@@ -58,6 +58,8 @@ shellmates-discord-bot/
 * Add, Update or remove events (Admin only: `/add_event`, `/update_event`, `/remove_event`).
 * Fetch random cybersecurity facts (`/cyberfact`).
 * Add new facts (Admin only: `/add_fact`).
+* Fetch random cybersecurity jokes (`/cyberjoke`).
+* Add new jokes (Admin only: `/add_joke`).
 * Fully async, API-driven architecture using `APIClient`.
 * Slash commands only (no prefix commands).
 * Logging, error handling, and permission checks for reliable operation.
@@ -125,7 +127,7 @@ uvicorn main:app
 ---
 
 * The bot will connect to Discord using your `DISCORD_TOKEN`.
-* Slash commands (`/events`, `/add_event`, `/update_event`, `/remove_event`, `/cyberfact`, `/add_fact`) will be available in your server.
+* Slash commands (`/events`, `/add_event`, `/update_event`, `/remove_event`, `/cyberfact`, `/add_fact`, `/cyberjoke`, `/add_joke`) will be available in your server.
 
 ---
 
