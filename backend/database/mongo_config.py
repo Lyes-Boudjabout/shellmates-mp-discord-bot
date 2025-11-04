@@ -26,7 +26,7 @@ class MongoDB:
     def get_client(cls) -> AsyncIOMotorClient:
         if cls._client is None:
             cls._client = AsyncIOMotorClient(MONGO_URI)
-            logger.info(f"Connected to MongoDB")
+            logger.info(f"Connection to MongoDB Established")
         return cls._client
 
     @classmethod
