@@ -301,7 +301,9 @@ async def help_command(interaction: discord.Interaction):
 @add_fact.error
 @add_joke.error
 @add_event.error
+@update_event.error
 @remove_event.error
+@add_quiz.error
 async def permission_error(interaction: discord.Interaction, error: Exception):
     if isinstance(error, app_commands.errors.MissingPermissions):
         await interaction.response.send_message("❌ You lack administrator permissions.", ephemeral=True)
