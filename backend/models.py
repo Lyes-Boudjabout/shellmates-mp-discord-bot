@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 class Event(BaseModel):
     title: str
@@ -11,3 +12,8 @@ class Fact(BaseModel):
 
 class Joke(BaseModel):
     content: str
+
+class Quiz(BaseModel):
+    question: str
+    options: List[str]
+    correct_option: int    

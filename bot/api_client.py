@@ -134,3 +134,20 @@ class APIClient:
         """Delete a cybersecurity joke."""
         resp = await self._request("DELETE", f"/jokes/{joke_id}")
         return bool(resp)
+    
+# Quiz CRUD
+    async def get_quizzes(self):
+        """Fetch all quizzes."""
+        return await self._request("GET", "/quiz") or []
+
+    async def get_quiz(self, quiz_id: str):
+        """Fetch a quiz by ID."""
+        return await self._request("GET", f"/quiz/{quiz_id}")
+
+    async def create_quiz(self, quiz_data: dict):
+        """Create a new quiz."""
+        return await self._request("POST", "/quiz", json=quiz_data)
+
+    async def delete_quiz(self, quiz_id: str):
+        """Delete a quiz."""
+        return await self._request("DELETE", f"/quiz/{quiz_id}")
