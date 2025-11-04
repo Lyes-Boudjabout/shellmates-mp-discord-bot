@@ -183,6 +183,10 @@ docker-compose logs -f bot
 | `/remove_event` | Remove an event                     | Admin only  |
 | `/cyberfact`    | Display a random cybersecurity fact | Everyone    |
 | `/add_fact`     | Add a new fact                      | Admin only  |
+| `/cyberjoke`    | Display a random cybersecurity joke | Everyone    |
+| `/add_joke`     | add a new joke                      | Admin only  |
+| `/help`         | Play a random cybersecurity quiz    | Everyone    |
+| `/add_quiz`     | add a new quizz                     | Admin only  |
 | `/help`         | Show all available commands         | Everyone    |
 
 ---

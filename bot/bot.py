@@ -6,6 +6,10 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 from pathlib import Path
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+import datetime
+
 
 from api_client import APIClient
 
@@ -13,6 +17,7 @@ from api_client import APIClient
 env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
 TOKEN = os.getenv("DISCORD_TOKEN")
+CHANNEL_ID = int(os.getenv("DAILY_FACT_CHANNEL_ID"))
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 FACTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/facts"
 EVENTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/events"
@@ -33,7 +38,8 @@ bot = commands.Bot(command_prefix="/", intents=intents)
 async def on_ready():
     await bot.tree.sync()
     logger.info(f"✅ CyberBot connected as {bot.user} and ready.")
-    print(f"CyberBot connected as {bot.user}")
+    if not scheduler.running:
+        scheduler.start()
 
 
 # === Slash Commands === #
@@ -162,6 +168,28 @@ async def add_fact(interaction: discord.Interaction, fact: str):
     else:
         await interaction.response.send_message("⚠️ Failed to add fact.", ephemeral=True)
 
+# === DAILY FACT SCHEDULER === #
+
+scheduler = AsyncIOScheduler()
+
+async def send_daily_fact():
+    #Send a random cybersecurity fact once per day.#
+    channel = bot.get_channel(CHANNEL_ID)
+    if channel is None:
+        print("Channel not found. Check the channel ID in .env.")
+        return
+
+    async with APIClient(FACTS_ENDPOINT) as api:
+        facts = await api.get_facts()
+        fact = random.choice(facts)
+
+    if fact:
+        await channel.send(f"**Cybersecurity Fact of the Day**\n> {fact['content']}")
+    else:
+        await channel.send("Couldn't fetch a fact today — please check the API.")
+
+scheduler.add_job(send_daily_fact, CronTrigger(hour=7, minute=00, timezone="Africa/Algiers"))
+
 
 # /cyberjoke — random joke
 @bot.tree.command(name="cyberjoke", description="Get a random cybersecurity joke.")
@@ -192,9 +220,9 @@ async def add_joke(interaction: discord.Interaction, joke: str):
     else:
         await interaction.response.send_message("⚠️ Failed to add joke.", ephemeral=True)
 
-# /quiz — Play a random quiz
-@bot.tree.command(name="quiz", description="Test your cybersecurity knowledge with a random quiz!")
-async def quiz(interaction: discord.Interaction):
+# /cyberquiz — Play a random quiz
+@bot.tree.command(name="cyberquiz", description="Test your cybersecurity knowledge with a random quiz!")
+async def cyberquiz(interaction: discord.Interaction):
     await interaction.response.defer(thinking=True)
     async with APIClient(QUIZ_ENDPOINT) as api:
         quizzes = await api.get_quizzes()
@@ -248,14 +276,11 @@ async def add_quiz(interaction: discord.Interaction, question: str, options: str
         await interaction.response.send_message("❌ You lack permission to add quizzes.", ephemeral=True)
         return
 
-    # Parse & clean options, remove empty ones
     options_list = [opt.strip() for opt in options.split(",") if opt.strip() != ""]
     if len(options_list) < 2:
         await interaction.response.send_message("⚠️ You must provide at least 2 non-empty options (comma-separated).", ephemeral=True)
         return
 
-    # Accept 1-based index from user and convert to 0-based internally
-    # (user-friendly: 1 = first option, 2 = second, ...)
     user_index = correct_index
     if user_index < 1 or user_index > len(options_list):
         await interaction.response.send_message(f"⚠️ Invalid correct answer number. Send a number between 1 and {len(options_list)} (1 = first option).", ephemeral=True)
@@ -291,7 +316,7 @@ async def help_command(interaction: discord.Interaction):
     embed.add_field(name="/add_fact", value="Add a new fact (Admin only).", inline=False)
     embed.add_field(name="/cyberjoke", value="Get a random cybersecurity joke.", inline=False)
     embed.add_field(name="/add_joke", value="Add a new joke (Admin only).", inline=False)
-    embed.add_field(name="/quiz", value="Play a random cybersecurity quiz.", inline=False)
+    embed.add_field(name="/cyberquiz", value="Play a random cybersecurity quiz.", inline=False)
     embed.add_field(name="/add_quiz", value="Add a new quiz (Admin only).", inline=False)
     embed.add_field(name="/help", value="Show this help message.", inline=False)
     await interaction.response.send_message(embed=embed)
@@ -315,3 +340,5 @@ if __name__ == "__main__":
     if not TOKEN:
         raise ValueError("❌ DISCORD_TOKEN not found in environment.")
     bot.run(TOKEN)
+
+
