@@ -16,7 +16,7 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 FACTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/facts"
 EVENTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/events"
-JOKES_ENDPOINT = API_BASE_URL.rstrip('/')
+JOKES_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/jokes"
 QUIZ_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/quiz"
 
 # === Logging configuration === #
