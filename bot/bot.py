@@ -17,6 +17,8 @@ API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 FACTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/facts"
 EVENTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/events"
 JOKES_ENDPOINT = API_BASE_URL.rstrip('/')
+QUIZ_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/quiz"
+
 # === Logging configuration === #
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("CyberBot")
@@ -190,6 +192,92 @@ async def add_joke(interaction: discord.Interaction, joke: str):
     else:
         await interaction.response.send_message("⚠️ Failed to add joke.", ephemeral=True)
 
+# /quiz — Play a random quiz
+@bot.tree.command(name="quiz", description="Test your cybersecurity knowledge with a random quiz!")
+async def quiz(interaction: discord.Interaction):
+    await interaction.response.defer(thinking=True)
+    async with APIClient(QUIZ_ENDPOINT) as api:
+        quizzes = await api.get_quizzes()
+
+    if not quizzes:
+        await interaction.followup.send("📭 No quizzes available right now.")
+        return
+
+    quiz = random.choice(quizzes)
+    question = quiz.get("question", "Unknown question")
+    options = quiz.get("options", [])
+    correct_option = quiz.get("correct_option", 0)
+
+    if not options:
+        await interaction.followup.send("⚠️ This quiz has no options defined.")
+        return
+
+    view = discord.ui.View()
+
+    async def make_callback(choice_index: int):
+        async def callback(inter_btn: discord.Interaction):
+            if choice_index == correct_option:
+                await inter_btn.response.send_message("✅ Correct!", ephemeral=True)
+            else:
+                await inter_btn.response.send_message(
+                    f"❌ Wrong! The correct answer was **{options[correct_option]}**.",
+                    ephemeral=True
+                )
+            for child in view.children:
+                child.disabled = True
+            await inter_btn.message.edit(view=view)
+        return callback
+
+    for i, option in enumerate(options):
+        button = discord.ui.Button(label=option, style=discord.ButtonStyle.primary)
+        button.callback = await make_callback(i)
+        view.add_item(button)
+
+    embed = discord.Embed(title="🧠 Cybersecurity Quiz", description=question, color=discord.Color.orange())
+    await interaction.followup.send(embed=embed, view=view)
+
+# /add_quiz — Add a new quiz (Admin only)
+@bot.tree.command(name="add_quiz", description="Add a new cybersecurity quiz (Admin only).")
+@app_commands.describe(
+    question="Quiz question text",
+    options="Comma-separated list of options (e.g. A,B,C,D)",
+    correct_index="The number (starting from 1) of the correct answer"
+)
+async def add_quiz(interaction: discord.Interaction, question: str, options: str, correct_index: int):
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("❌ You lack permission to add quizzes.", ephemeral=True)
+        return
+
+    # Parse & clean options, remove empty ones
+    options_list = [opt.strip() for opt in options.split(",") if opt.strip() != ""]
+    if len(options_list) < 2:
+        await interaction.response.send_message("⚠️ You must provide at least 2 non-empty options (comma-separated).", ephemeral=True)
+        return
+
+    # Accept 1-based index from user and convert to 0-based internally
+    # (user-friendly: 1 = first option, 2 = second, ...)
+    user_index = correct_index
+    if user_index < 1 or user_index > len(options_list):
+        await interaction.response.send_message(f"⚠️ Invalid correct answer number. Send a number between 1 and {len(options_list)} (1 = first option).", ephemeral=True)
+        return
+
+    correct_zero_based = user_index - 1
+
+    quiz_data = {
+        "question": question,
+        "options": options_list,
+        "correct_option": correct_zero_based
+    }
+
+    async with APIClient(QUIZ_ENDPOINT) as api:
+        result = await api.create_quiz(quiz_data)
+
+    if result:
+        await interaction.response.send_message("✅ Quiz added successfully!", ephemeral=True)
+    else:
+        await interaction.response.send_message("⚠️ Failed to add quiz.", ephemeral=True)
+
+
 
 # /help — list all commands
 @bot.tree.command(name="help", description="Display all available commands.")
@@ -203,6 +291,8 @@ async def help_command(interaction: discord.Interaction):
     embed.add_field(name="/add_fact", value="Add a new fact (Admin only).", inline=False)
     embed.add_field(name="/cyberjoke", value="Get a random cybersecurity joke.", inline=False)
     embed.add_field(name="/add_joke", value="Add a new joke (Admin only).", inline=False)
+    embed.add_field(name="/quiz", value="Play a random cybersecurity quiz.", inline=False)
+    embed.add_field(name="/add_quiz", value="Add a new quiz (Admin only).", inline=False)
     embed.add_field(name="/help", value="Show this help message.", inline=False)
     await interaction.response.send_message(embed=embed)
 

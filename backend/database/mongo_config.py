@@ -41,3 +41,4 @@ db = MongoDB.get_db()
 events_collection = db["events"]
 facts_collection = db["facts"]
 jokes_collection = db["jokes"]
+quiz_collection = db["quizzes"]
