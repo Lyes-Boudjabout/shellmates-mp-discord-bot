@@ -67,7 +67,6 @@ class APIClient:
             return None
 
     # Event CRUD
-
     async def get_events(self) -> List[Dict[str, Any]]:
         """Fetch all events."""
         return await self._request("GET", "/events") or []
@@ -90,7 +89,6 @@ class APIClient:
         return bool(resp)
 
     # Cyber Fact CRUD
-
     async def get_facts(self) -> List[Dict[str, Any]]:
         """Fetch all cybersecurity facts."""
         return await self._request("GET", "/facts") or []
@@ -111,3 +109,47 @@ class APIClient:
         """Delete a cybersecurity fact."""
         resp = await self._request("DELETE", f"/facts/{fact_id}")
         return bool(resp)
+
+    # Cyber Joke CRUD
+    async def get_jokes(self) -> List[Dict[str, Any]]:
+        """Fetch all cybersecurity jokes."""
+        return await self._request("GET", "/jokes") or []
+
+    async def get_joke(self, joke_id: str) -> Optional[Dict[str, Any]]:
+        """Fetch a specific joke by ID."""
+        return await self._request("GET", f"/jokes/{joke_id}")
+
+    async def create_joke(self, joke_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Create a new cybersecurity joke."""
+        return await self._request("POST", "/jokes/", json=joke_data)
+
+    async def update_joke(self, joke_id: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Update a cybersecurity joke."""
+        return await self._request("PUT", f"/jokes/{joke_id}", json=update_data)
+
+    async def delete_joke(self, joke_id: str) -> bool:
+        """Delete a cybersecurity joke."""
+        resp = await self._request("DELETE", f"/jokes/{joke_id}")
+        return bool(resp)
+
+    # Quiz CRUD
+    async def get_quizzes(self):
+        """Fetch all quizzes."""
+        return await self._request("GET", "/quiz") or []
+
+    async def get_quiz(self, quiz_id: str):
+        """Fetch a quiz by ID."""
+        return await self._request("GET", f"/quiz/{quiz_id}")
+
+    async def create_quiz(self, quiz_data: dict):
+        """Create a new quiz."""
+        return await self._request("POST", "/quiz", json=quiz_data)
+
+    async def delete_quiz(self, quiz_id: str):
+        """Delete a quiz."""
+        return await self._request("DELETE", f"/quiz/{quiz_id}")
+
+    # About CRUD
+    async def get_about(self) -> Optional[Dict[str, Any]]:
+        """Fetch about-us information."""
+        return await self._request("GET", "/about")

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api import events, facts  # routers for events and facts
+from api import events, facts, jokes, quiz, about # routers for events, facts, jokes, quiz and about
 
 # === FastAPI app instance === #
 app = FastAPI(
@@ -27,3 +27,7 @@ app.add_middleware(
 # === Include Routers === #
 app.include_router(events.router, prefix="/events", tags=["Events"])
 app.include_router(facts.router, prefix="/facts", tags=["CyberFacts"])
+app.include_router(jokes.router, prefix="/jokes", tags=["CyberJokes"])
+app.include_router(quiz.router, prefix="/quiz", tags=["CyberQuiz"])
+app.include_router(about.router, prefix="/about", tags=["About-us"])
+
