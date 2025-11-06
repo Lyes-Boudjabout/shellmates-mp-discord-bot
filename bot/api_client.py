@@ -113,7 +113,7 @@ class APIClient:
     # Cyber Joke CRUD
     async def get_jokes(self) -> List[Dict[str, Any]]:
         """Fetch all cybersecurity jokes."""
-        return await self._request("GET", "/jokes") or []
+        return await self._request("GET", "/") or []
 
     async def get_joke(self, joke_id: str) -> Optional[Dict[str, Any]]:
         """Fetch a specific joke by ID."""
@@ -121,7 +121,7 @@ class APIClient:
 
     async def create_joke(self, joke_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Create a new cybersecurity joke."""
-        return await self._request("POST", "/jokes/", json=joke_data)
+        return await self._request("POST", "/", json=joke_data)
 
     async def update_joke(self, joke_id: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Update a cybersecurity joke."""
