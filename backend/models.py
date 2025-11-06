@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 from typing import List
 
 class Event(BaseModel):
@@ -10,6 +11,9 @@ class Event(BaseModel):
 class Fact(BaseModel):
     content: str
 
+class Quote(BaseModel):
+    content: str
+    author: Optional[str] = "Unknown"
 class Joke(BaseModel):
     content: str
 

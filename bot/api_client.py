@@ -67,7 +67,6 @@ class APIClient:
             return None
 
     # Event CRUD
-
     async def get_events(self) -> List[Dict[str, Any]]:
         """Fetch all events."""
         return await self._request("GET", "/events") or []
@@ -90,7 +89,6 @@ class APIClient:
         return bool(resp)
 
     # Cyber Fact CRUD
-
     async def get_facts(self) -> List[Dict[str, Any]]:
         """Fetch all cybersecurity facts."""
         return await self._request("GET", "/facts") or []
@@ -112,8 +110,7 @@ class APIClient:
         resp = await self._request("DELETE", f"/facts/{fact_id}")
         return bool(resp)
 
-# Cyber Joke CRUD
-
+    # Cyber Joke CRUD
     async def get_jokes(self) -> List[Dict[str, Any]]:
         """Fetch all cybersecurity jokes."""
         return await self._request("GET", "/jokes") or []
@@ -134,8 +131,8 @@ class APIClient:
         """Delete a cybersecurity joke."""
         resp = await self._request("DELETE", f"/jokes/{joke_id}")
         return bool(resp)
-    
-# Quiz CRUD
+
+    # Quiz CRUD
     async def get_quizzes(self):
         """Fetch all quizzes."""
         return await self._request("GET", "/quiz") or []
@@ -151,3 +148,8 @@ class APIClient:
     async def delete_quiz(self, quiz_id: str):
         """Delete a quiz."""
         return await self._request("DELETE", f"/quiz/{quiz_id}")
+
+    # About CRUD
+    async def get_about(self) -> Optional[Dict[str, Any]]:
+        """Fetch about-us information."""
+        return await self._request("GET", "/about")

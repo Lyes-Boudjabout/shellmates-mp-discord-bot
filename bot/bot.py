@@ -303,6 +303,81 @@ async def add_quiz(interaction: discord.Interaction, question: str, options: str
         await interaction.response.send_message("⚠️ Failed to add quiz.", ephemeral=True)
 
 
+# /about-us — Information about Shellmates club
+@bot.tree.command(name="about-us", description="Learn about Shellmates club and its departments.")
+async def about_us(interaction: discord.Interaction):
+    await interaction.response.defer(thinking=True)
+    async with APIClient(ABOUT_ENDPOINT) as api:
+        about_info = await api.get_about()
+
+    if not about_info:
+        await interaction.followup.send("📭 Could not retrieve club information.")
+        return
+
+    # Main embed with general info
+    embed = discord.Embed(
+        title=f"🛡️ {about_info.get('name', 'Shellmates')}",
+        description=about_info.get('description', ''),
+        color=discord.Color.purple()
+    )
+
+    embed.add_field(
+        name="📅 Founded",
+        value=about_info.get('founded', 'N/A'),
+        inline=True
+    )
+
+    embed.add_field(
+        name="🎯 Mission",
+        value=about_info.get('mission', 'N/A')[:500],  # Limit length
+        inline=False
+    )
+
+    embed.add_field(
+        name="👥 Our Community",
+        value=about_info.get('our community', 'N/A')[:500],  # Limit length
+        inline=False
+    )
+
+    # Departments - Show first 3
+    departments = about_info.get('departments', [])
+    if departments:
+        dept_text = ""
+        for d in departments[:3]:  # Only show first 3 to avoid message being too long
+            dept_text += f"**{d['name']}**\n{d['description'][:150]}...\n\n"
+        embed.add_field(
+            name="🏢 Departments (Sample)",
+            value=dept_text,
+            inline=False
+        )
+
+    # Activities
+    activities = about_info.get('activities', [])
+    if activities:
+        activity_text = "\n".join([f"• {activity}" for activity in activities])
+        embed.add_field(
+            name="🎓 Activities",
+            value=activity_text,
+            inline=False
+        )
+
+    # Contact
+    contact = about_info.get('contact', {})
+    if contact:
+        contact_text = f"🌐 [Website]({contact.get('website', 'N/A')})\n"
+        contact_text += f"📧 {contact.get('email', 'N/A')}\n"
+        contact_text += f"📍 {contact.get('location', 'N/A')}"
+        embed.add_field(
+            name="📞 Contact",
+            value=contact_text,
+            inline=False
+        )
+
+    embed.set_footer(text="/* Where there is a Shell, There is a way */ 🚀")
+
+    await interaction.followup.send(embed=embed)
+
+
 
 # /help — list all commands
 @bot.tree.command(name="help", description="Display all available commands.")
@@ -318,6 +393,7 @@ async def help_command(interaction: discord.Interaction):
     embed.add_field(name="/add_joke", value="Add a new joke (Admin only).", inline=False)
     embed.add_field(name="/cyberquiz", value="Play a random cybersecurity quiz.", inline=False)
     embed.add_field(name="/add_quiz", value="Add a new quiz (Admin only).", inline=False)
+    embed.add_field(name="/about-us", value="Learn about Shellmates club.", inline=False)
     embed.add_field(name="/help", value="Show this help message.", inline=False)
     await interaction.response.send_message(embed=embed)
 
