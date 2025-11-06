@@ -106,19 +106,25 @@ async def add_event(interaction: discord.Interaction, title: str, date: str, des
 # /update_event — update an existing event (Admin only)
 @bot.tree.command(name="update_event", description="Update an existing club event (Admin only).")
 @app_commands.describe(
-    title="New title (optional)",
+    current_title="Current title of the event (required)",
+    new_title="New title for the event (optional, if renaming)",
     date="New date (optional)",
     description="New description (optional)",
     location="New location (optional)"
 )
-async def update_event(interaction: discord.Interaction, event_title: str, title: str = None, date: str = None, description: str = None, location: str = None):
+async def update_event(interaction: discord.Interaction, current_title: str, new_title: str = None, date: str = None, description: str = None, location: str = None):
     if not interaction.user.guild_permissions.administrator:
         await interaction.response.send_message("❌ You lack permission to update events.", ephemeral=True)
         return
 
+    # --- Title Validation ---
+    if not current_title.strip():
+        await interaction.response.send_message("⚠️ Please provide the current event title.", ephemeral=True)
+        return
+
     # Build the payload with only provided fields
     update_data = {}
-    if title: update_data["title"] = title
+    if new_title: update_data["title"] = new_title
     if date: update_data["date"] = date
     if description: update_data["description"] = description
     if location: update_data["location"] = location
@@ -128,10 +134,10 @@ async def update_event(interaction: discord.Interaction, event_title: str, title
         return
 
     async with APIClient(EVENTS_ENDPOINT) as api:
-        updated = await api.update_event(event_title, update_data)
+        updated = await api.update_event(current_title, update_data)
 
     if updated:
-        await interaction.response.send_message(f"✅ Event **'{event_title}'** updated successfully!")
+        await interaction.response.send_message(f"✅ Event **'{current_title}'** updated successfully!")
     else:
         await interaction.response.send_message("⚠️ Failed to update event (check Title or permissions).", ephemeral=True)
 
