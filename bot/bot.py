@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 from pathlib import Path
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-import datetime
+from apscheduler.triggers.interval import IntervalTrigger
+from datetime import datetime, timedelta , timezone
 
 
 from api_client import APIClient
@@ -18,6 +19,7 @@ env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
 TOKEN = os.getenv("DISCORD_TOKEN")
 CHANNEL_ID = int(os.getenv("DAILY_FACT_CHANNEL_ID"))
+EVENTS_CHANNEL_ID = int(os.getenv("EVENTS_CHANNEL_ID"))  
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 FACTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/facts"
 EVENTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/events"
@@ -26,6 +28,7 @@ QUIZ_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/quiz"
 ABOUT_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/about"
 
 # === Logging configuration === #
+scheduler = AsyncIOScheduler()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("CyberBot")
 
@@ -70,7 +73,7 @@ async def events(interaction: discord.Interaction):
 @bot.tree.command(name="add_event", description="Add a new club event (Admin only).")
 @app_commands.describe(
     title="Title of the event",
-    date="Date and time of the event",
+    date="Please use this format: YYYY-MM-DDTHH:MM:SS",
     description="Brief event description",
     location="Event location or link"
 )
@@ -87,6 +90,16 @@ async def add_event(interaction: discord.Interaction, title: str, date: str, des
         await interaction.response.send_message(f"✅ Event **'{title}'** added successfully!")
     else:
         await interaction.response.send_message("⚠️ Failed to add event.", ephemeral=True)
+    channel = bot.get_channel(EVENTS_CHANNEL_ID)
+    if channel:
+        await channel.send(
+            f"📢 **New Event Added!**\n"
+            f"**Title:** {event_data['title']}\n"
+            f"📅 **Date:** {event_data['date']}\n"
+            f"📍 **Location:** {event_data.get('location', 'Not specified')}\n"
+            f"📝 **Description:** {event_data.get('description', 'No description')}"
+        )
+
 
 
 # /update_event — update an existing event (Admin only)
@@ -139,6 +152,63 @@ async def remove_event(interaction: discord.Interaction, event_id: str):
     else:
         await interaction.response.send_message("⚠️ Event not found or could not be removed.", ephemeral=True)
 
+async def prune_finished_events():
+    """
+    Fetch events from the API and delete any whose 'date' is more than 10 minutes in the past.
+    Assumes event objects contain either 'id' or '_id' and a 'date' in ISO format.
+    """
+    logger.debug("Running prune_finished_events job...")
+    async with APIClient(EVENTS_ENDPOINT) as api:
+        try:
+            events = await api.get_events()
+        except Exception as exc:
+            logger.error(f"Failed to fetch events for pruning: {exc}")
+            return
+
+        if not events:
+            return
+
+        now = datetime.now(timezone.utc)
+        for ev in events:
+            date_str = ev.get("date")
+            if not date_str:
+                continue
+
+            try:
+                ev_dt = datetime.fromisoformat(date_str)
+            except Exception:
+                try:
+                    ev_dt = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S")
+                except Exception:
+                    logger.warning(f"Unable to parse event date '{date_str}' for event {ev.get('id') or ev.get('_id')}")
+                    continue
+
+            if ev_dt.tzinfo is None:
+                ev_dt = ev_dt.replace(tzinfo=timezone.utc)
+
+            if now - ev_dt > timedelta(minutes=10):
+                event_id = ev.get("id") or ev.get("_id")
+                event_title = ev.get("title", str(event_id))
+                if not event_id:
+                    logger.warning(f"No id found for expired event: {event_title}")
+                    continue
+                try:
+                    deleted = await api.delete_event(event_id)
+                    if deleted:
+                        logger.info(f"Pruned event {event_id} ({event_title}) — ended >10 minutes ago.")
+                        channel = bot.get_channel(EVENTS_CHANNEL_ID)
+                        if channel:
+                            try:
+                                await channel.send(f"🗑️ Event **{event_title}** has been removed (ended >10 minutes ago).")
+                            except Exception as send_exc:
+                                logger.debug(f"Couldn't notify channel about pruned event: {send_exc}")
+                    else:
+                        logger.warning(f"API refused to delete event {event_id}")
+                except Exception as exc:
+                    logger.error(f"Error deleting event {event_id}: {exc}")
+
+
+scheduler.add_job(prune_finished_events, IntervalTrigger(seconds=60))
 
 # /cyberfact — random fact
 @bot.tree.command(name="cyberfact", description="Get a random cybersecurity fact.")
@@ -171,7 +241,6 @@ async def add_fact(interaction: discord.Interaction, fact: str):
 
 # === DAILY FACT SCHEDULER === #
 
-scheduler = AsyncIOScheduler()
 
 async def send_daily_fact():
     #Send a random cybersecurity fact once per day.#

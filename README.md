@@ -187,7 +187,7 @@ docker-compose logs -f bot
 | `/add_fact`     | Add a new fact                      | Admin only  |
 | `/cyberjoke`    | Display a random cybersecurity joke | Everyone    |
 | `/add_joke`     | add a new joke                      | Admin only  |
-| `/help`         | Play a random cybersecurity quiz    | Everyone    |
+| `/cyberquiz`    | Play a random cybersecurity quiz    | Everyone    |
 | `/add_quiz`     | add a new quizz                     | Admin only  |
 | `/help`         | Show all available commands         | Everyone    |
 
