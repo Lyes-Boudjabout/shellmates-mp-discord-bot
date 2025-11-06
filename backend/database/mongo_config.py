@@ -40,3 +40,4 @@ class MongoDB:
 db = MongoDB.get_db()
 events_collection = db["events"]
 facts_collection = db["facts"]
+quotes_collection = db["quotes"]
