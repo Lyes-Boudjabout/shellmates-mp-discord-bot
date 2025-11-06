@@ -18,10 +18,11 @@ The **Shellmates Discord Bot** combines:
 ```
 shellmates-discord-bot/
 ├── backend/         
-│   ├── api/             # Event, Fact and Joke endpoints
+│   ├── api/             # Event, Fact, Joke, Quiz and Quote endpoints
 │   ├── database/        # MongoDB configuration
 │   ├── main.py          # Backend entrypoint
 │   ├── app.py           # FastAPI app configuration
+│   ├── populate_quotes.py
 │   ├── Dockerfile
 │   ├── .env.example
 │   └── requirements.txt
@@ -54,10 +55,15 @@ shellmates-discord-bot/
 
 ## Features
 
+* Learn about Shellmates Club (`/about-us`).
 * Display upcoming club events (`/events`).
 * Add, Update or remove events (Admin only: `/add_event`, `/update_event`, `/remove_event`).
 * Fetch random cybersecurity facts (`/cyberfact`).
 * Add new facts (Admin only: `/add_fact`).
+* Fetch random cybersecurity quotes (`/cyberquote`).
+* Add new quotes (Admin only: `/add_quote`).
+* Pass a cybersecurity quizz (`/cyberquiz`).
+* Add new quizzez (Admin only: `/add_quiz`).
 * Fetch random cybersecurity jokes (`/cyberjoke`).
 * Add new jokes (Admin only: `/add_joke`).
 * Fully async, API-driven architecture using `APIClient`.
@@ -86,6 +92,8 @@ cd shellmates-mp-discord-bot
 ```env
 DISCORD_TOKEN=YOUR_DISCORD_BOT_TOKEN
 API_BASE_URL=YOUR_API_BASE_URL
+DAILY_FACT_CHANNEL_ID=TARGETED_CHANNEL_ID
+EVENTS_CHANNEL_ID=TARGETED_CHANNEL_ID
 ```
 
 **Backend `.env` (`backend/.env`):**
@@ -127,7 +135,7 @@ uvicorn main:app
 ---
 
 * The bot will connect to Discord using your `DISCORD_TOKEN`.
-* Slash commands (`/events`, `/add_event`, `/update_event`, `/remove_event`, `/cyberfact`, `/add_fact`, `/cyberjoke`, `/add_joke`) will be available in your server.
+* Slash commands (`/events`, `/add_event`, `/update_event`, `/remove_event`, `/cyberfact`, `/add_fact`, `/cyberjoke`, `/add_joke`, `/cyberquiz`, `/cyberquote`, `/add_quiz`, `/add_quote`, `/about-us`, `/help`) will be available in your server.
 
 ---
 
@@ -189,6 +197,9 @@ docker-compose logs -f bot
 | `/add_joke`     | add a new joke                      | Admin only  |
 | `/cyberquiz`    | Play a random cybersecurity quiz    | Everyone    |
 | `/add_quiz`     | add a new quizz                     | Admin only  |
+| `/cyberquote`   | Display a random cybersecurity quote| Everyone    |
+| `/add_quote`    | add a new quote                     | Admin only  |
+| `/about-us`     | Show all available commands         | Everyone    |
 | `/help`         | Show all available commands         | Everyone    |
 
 ---
