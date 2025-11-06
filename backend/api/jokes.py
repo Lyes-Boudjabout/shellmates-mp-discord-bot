@@ -4,7 +4,7 @@ from database.mongo_config import jokes_collection
 from typing import List
 from bson import ObjectId
 
-router = APIRouter(tags=["jokes"])
+router = APIRouter(prefix="/jokes", tags=["jokes"])
 
 def serialize_joke(joke: dict) -> dict:
     joke["id"] = str(joke["_id"])
