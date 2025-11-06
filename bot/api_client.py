@@ -83,8 +83,8 @@ class APIClient:
         """Update an existing event."""
         return await self._request("PUT", f"/events/{event_id}", json=update_data)
 
-    async def delete_event(self, event_id: str) -> bool:
-        """Delete an event by ID."""
+    async def delete_event(self, event_title: str) -> bool:
+        """Delete an event by Title."""
         resp = await self._request("DELETE", f"/events/{event_id}")
         return bool(resp)
 
