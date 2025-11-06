@@ -55,7 +55,7 @@ shellmates-discord-bot/
 
 ## Features
 
-* Learn about Shellmates Club (`/about-us`).
+* Learn about Shellmates Club (`/about-shellmates`).
 * Display upcoming club events (`/events`).
 * Add, Update or remove events (Admin only: `/add_event`, `/update_event`, `/remove_event`).
 * Fetch random cybersecurity facts (`/cyberfact`).
@@ -185,22 +185,22 @@ docker-compose logs -f bot
 
 ## Slash Commands
 
-| Command         | Description                         | Permissions |
-| --------------- | ----------------------------------- | ----------- |
-| `/events`       | List all upcoming events            | Everyone    |
-| `/add_event`    | Add a new event                     | Admin only  |
-| `/update_event` | Update a new event                  | Admin only  |
-| `/remove_event` | Remove an event                     | Admin only  |
-| `/cyberfact`    | Display a random cybersecurity fact | Everyone    |
-| `/add_fact`     | Add a new fact                      | Admin only  |
-| `/cyberjoke`    | Display a random cybersecurity joke | Everyone    |
-| `/add_joke`     | add a new joke                      | Admin only  |
-| `/cyberquiz`    | Play a random cybersecurity quiz    | Everyone    |
-| `/add_quiz`     | add a new quizz                     | Admin only  |
-| `/cyberquote`   | Display a random cybersecurity quote| Everyone    |
-| `/add_quote`    | add a new quote                     | Admin only  |
-| `/about-us`     | Show all available commands         | Everyone    |
-| `/help`         | Show all available commands         | Everyone    |
+| Command             | Description                         | Permissions |
+| ------------------- | ----------------------------------- | ----------- |
+| `/events`           | List all upcoming events            | Everyone    |
+| `/add_event`        | Add a new event                     | Admin only  |
+| `/update_event`     | Update a new event                  | Admin only  |
+| `/remove_event`     | Remove an event                     | Admin only  |
+| `/cyberfact`        | Display a random cybersecurity fact | Everyone    |
+| `/add_fact`         | Add a new fact                      | Admin only  |
+| `/cyberjoke`        | Display a random cybersecurity joke | Everyone    |
+| `/add_joke`         | add a new joke                      | Admin only  |
+| `/cyberquiz`        | Play a random cybersecurity quiz    | Everyone    |
+| `/add_quiz`         | add a new quizz                     | Admin only  |
+| `/cyberquote`       | Display a random cybersecurity quote| Everyone    |
+| `/add_quote`        | add a new quote                     | Admin only  |
+| `/about-shellmates` | Show all available commands         | Everyone    |
+| `/help`             | Show all available commands         | Everyone    |
 
 ---
 
