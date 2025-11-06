@@ -106,13 +106,12 @@ async def add_event(interaction: discord.Interaction, title: str, date: str, des
 # /update_event — update an existing event (Admin only)
 @bot.tree.command(name="update_event", description="Update an existing club event (Admin only).")
 @app_commands.describe(
-    event_id="ID of the event to update",
     title="New title (optional)",
     date="New date (optional)",
     description="New description (optional)",
     location="New location (optional)"
 )
-async def update_event(interaction: discord.Interaction, event_id: str, title: str = None, date: str = None, description: str = None, location: str = None):
+async def update_event(interaction: discord.Interaction, event_title: str, title: str = None, date: str = None, description: str = None, location: str = None):
     if not interaction.user.guild_permissions.administrator:
         await interaction.response.send_message("❌ You lack permission to update events.", ephemeral=True)
         return
@@ -129,12 +128,12 @@ async def update_event(interaction: discord.Interaction, event_id: str, title: s
         return
 
     async with APIClient(EVENTS_ENDPOINT) as api:
-        updated = await api.update_event(event_id, update_data)
+        updated = await api.update_event(event_title, update_data)
 
     if updated:
-        await interaction.response.send_message(f"✅ Event **'{event_id}'** updated successfully!")
+        await interaction.response.send_message(f"✅ Event **'{event_title}'** updated successfully!")
     else:
-        await interaction.response.send_message("⚠️ Failed to update event (check ID or permissions).", ephemeral=True)
+        await interaction.response.send_message("⚠️ Failed to update event (check Title or permissions).", ephemeral=True)
 
 
 # /remove_event — delete an event by ID
