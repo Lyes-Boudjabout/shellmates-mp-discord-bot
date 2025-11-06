@@ -23,6 +23,7 @@ FACTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/facts"
 EVENTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/events"
 JOKES_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/jokes"
 QUIZ_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/quiz"
+ABOUT_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/about"
 
 # === Logging configuration === #
 logging.basicConfig(level=logging.INFO)
