@@ -29,14 +29,15 @@ async def create_event(event: Event):
     result = await events_collection.insert_one(event.dict())
     return {**event.dict(), "id": str(result.inserted_id)}
 
-@router.put("/{event_id}", response_model=dict)
-async def update_event(event_id: str, update_data: dict):
+@router.put("/{event_title}", response_model=dict)
+async def update_event(event_title: str, update_data: dict):
     result = await events_collection.update_one(
-        {"_id": ObjectId(event_id)}, {"$set": update_data}
+        {"title": event_title}, {"$set": update_data}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Event not found")
-    updated_doc = await events_collection.find_one({"_id": ObjectId(event_id)})
+    
+    updated_doc = await events_collection.find_one({"title": event_title})
     return serialize_event(updated_doc)
 
 @router.delete("/{event_title}", response_model=dict)
