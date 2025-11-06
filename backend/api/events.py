@@ -39,9 +39,9 @@ async def update_event(event_id: str, update_data: dict):
     updated_doc = await events_collection.find_one({"_id": ObjectId(event_id)})
     return serialize_event(updated_doc)
 
-@router.delete("/{event_id}", response_model=dict)
-async def delete_event(event_id: str):
-    result = await events_collection.delete_one({"_id": ObjectId(event_id)})
+@router.delete("/{event_title}", response_model=dict)
+async def delete_event(event_title: str):
+    result = await events_collection.delete_one({"title": event_title})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Event not found")
     return {"detail": "Event deleted"}
