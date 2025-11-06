@@ -403,8 +403,8 @@ async def add_quiz(interaction: discord.Interaction, question: str, options: str
 
 
 # /about-us — Information about Shellmates club
-@bot.tree.command(name="about-us", description="Learn about Shellmates club and its departments.")
-async def about_us(interaction: discord.Interaction):
+@bot.tree.command(name="about-shellmates", description="Learn about Shellmates club and its departments.")
+async def about_shellmates(interaction: discord.Interaction):
     await interaction.response.defer(thinking=True)
     async with APIClient(ABOUT_ENDPOINT) as api:
         about_info = await api.get_about()
@@ -494,7 +494,7 @@ async def help_command(interaction: discord.Interaction):
     embed.add_field(name="/cyberquote", value="Get a random cybersecurity quote.", inline=False)
     embed.add_field(name="/add_quote", value="Add a new quote (Admin only).", inline=False)
     embed.add_field(name="/add_quiz", value="Add a new quiz (Admin only).", inline=False)
-    embed.add_field(name="/about-us", value="Learn about Shellmates club.", inline=False)
+    embed.add_field(name="/about-shellmates", value="Learn about Shellmates club.", inline=False)
     embed.add_field(name="/help", value="Show this help message.", inline=False)
     await interaction.response.send_message(embed=embed)
 
