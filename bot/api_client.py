@@ -79,9 +79,9 @@ class APIClient:
         """Create a new event."""
         return await self._request("POST", "/events", json=event_data)
 
-    async def update_event(self, event_id: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    async def update_event(self, event_title: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Update an existing event."""
-        return await self._request("PUT", f"/events/{event_id}", json=update_data)
+        return await self._request("PUT", f"/events/{event_title}", json=update_data)
 
     async def delete_event(self, event_title: str) -> bool:
         """Delete an event by Title."""
