@@ -139,14 +139,14 @@ async def update_event(interaction: discord.Interaction, event_id: str, title: s
 
 # /remove_event — delete an event by ID
 @bot.tree.command(name="remove_event", description="Remove an existing event (Admin only).")
-@app_commands.describe(event_id="ID of the event to remove")
-async def remove_event(interaction: discord.Interaction, event_id: str):
+@app_commands.describe(event_title="Title of the event to remove")
+async def remove_event(interaction: discord.Interaction, event_title: str):
     if not interaction.user.guild_permissions.administrator:
         await interaction.response.send_message("❌ You lack permission to remove events.", ephemeral=True)
         return
 
     async with APIClient(EVENTS_ENDPOINT) as api:
-        success = await api.delete_event(event_id)
+        success = await api.delete_event(event_title)
 
     if success:
         await interaction.response.send_message(f"🗑️ Event deleted successfully.")
