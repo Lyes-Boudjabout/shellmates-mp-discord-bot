@@ -23,6 +23,7 @@ FACTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/facts"
 EVENTS_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/events"
 JOKES_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/jokes"
 QUIZ_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/quiz"
+QUOTES_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/quotes"
 ABOUT_ENDPOINT = f"{API_BASE_URL.rstrip('/')}/about"
 
 # === Logging configuration === #
@@ -205,6 +206,34 @@ async def cyberjoke(interaction: discord.Interaction):
 
     joke = random.choice(jokes)
     await interaction.followup.send(f"💡 **Cyber joke:** {joke.get('content', str(joke))}")
+
+# /cyberquote — random quote
+@bot.tree.command(name="cyberquote", description="Get a random cybersecurity quote.")
+async def cyberquote(interaction: discord.Interaction):
+    await interaction.response.defer(thinking=True)
+    async with APIClient(QUOTES_ENDPOINT) as api:
+        quotes = await api.get_quotes()
+
+    if not quotes:
+        await interaction.followup.send("📭 No cybersecurity quotes available.")
+        return
+
+    quote = random.choice(quotes)
+    await interaction.followup.send(f"💡 **Cyber quote:** {quote.get('content', str(quote))}")
+
+# /add_quote — add a quote (admin-only)
+@bot.tree.command(name="add_quote", description="Add a new cybersecurity quote (Admin only).")
+@app_commands.describe(quote="Enter the cybersecurity quote text")
+@app_commands.checks.has_permissions(administrator=True)
+async def add_quote(interaction: discord.Interaction, quote: str):
+    payload = {"content": quote}
+    async with APIClient(QUOTES_ENDPOINT) as api:
+        result = await api.create_quote(payload)
+
+    if result:
+        await interaction.response.send_message("✅ Cybersecurity quote added successfully!", ephemeral=True)
+    else:
+        await interaction.response.send_message("⚠️ Failed to add quote.", ephemeral=True)
 
 
 # /add_joke — add a joke (admin-only)
@@ -393,6 +422,8 @@ async def help_command(interaction: discord.Interaction):
     embed.add_field(name="/cyberjoke", value="Get a random cybersecurity joke.", inline=False)
     embed.add_field(name="/add_joke", value="Add a new joke (Admin only).", inline=False)
     embed.add_field(name="/cyberquiz", value="Play a random cybersecurity quiz.", inline=False)
+    embed.add_field(name="/cyberquote", value="Get a random cybersecurity quote.", inline=False)
+    embed.add_field(name="/add_quote", value="Add a new quote (Admin only).", inline=False)
     embed.add_field(name="/add_quiz", value="Add a new quiz (Admin only).", inline=False)
     embed.add_field(name="/about-us", value="Learn about Shellmates club.", inline=False)
     embed.add_field(name="/help", value="Show this help message.", inline=False)
@@ -402,6 +433,7 @@ async def help_command(interaction: discord.Interaction):
 # === Error Handler for Permissions === #
 @add_fact.error
 @add_joke.error
+@add_quote.error
 @add_event.error
 @update_event.error
 @remove_event.error

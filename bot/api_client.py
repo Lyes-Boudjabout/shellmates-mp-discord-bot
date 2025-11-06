@@ -153,3 +153,25 @@ class APIClient:
     async def get_about(self) -> Optional[Dict[str, Any]]:
         """Fetch about-us information."""
         return await self._request("GET", "/about")
+
+    # Quote CRUD
+    async def get_quotes(self) -> List[Dict[str, Any]]:
+        """Fetch all cybersecurity quotes."""
+        return await self._request("GET", "/quotes") or []
+    
+    async def get_quote(self, quote_id: str) -> Optional[Dict[str, Any]]:
+        """Fetch a specific quote by ID."""
+        return await self._request("GET", f"/quotes/{quote_id}")
+
+    async def create_quote(self, quote_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Create a new cybersecurity quote."""
+        return await self._request("POST", "/quotes/", json=quote_data)
+
+    async def update_quote(self, quote_id: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Update a cybersecurity quote."""
+        return await self._request("PUT", f"/quotes/{quote_id}", json=update_data)
+
+    async def delete_quote(self, quote_id: str) -> bool:
+        """Delete a cybersecurity quote."""
+        resp = await self._request("DELETE", f"/quotes/{quote_id}")
+        return bool(resp)
