@@ -85,7 +85,7 @@ class APIClient:
 
     async def delete_event(self, event_title: str) -> bool:
         """Delete an event by Title."""
-        resp = await self._request("DELETE", f"/events/{event_id}")
+        resp = await self._request("DELETE", f"/events/{event_title}")
         return bool(resp)
 
     # Cyber Fact CRUD
