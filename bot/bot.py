@@ -161,7 +161,8 @@ async def remove_event(interaction: discord.Interaction, event_title: str):
 async def prune_finished_events():
     """
     Fetch events from the API and delete any whose 'date' is more than 10 minutes in the past.
-    Assumes event objects contain either 'id' or '_id' and a 'date' in ISO format.
+    Tries to parse a few common date formats (handles trailing 'Z'), and will attempt deletion
+    by title first, then by id/_id as a fallback.
     """
     logger.debug("Running prune_finished_events job...")
     async with APIClient(EVENTS_ENDPOINT) as api:
@@ -176,42 +177,83 @@ async def prune_finished_events():
 
         now = datetime.now(timezone.utc)
         for ev in events:
-            date_str = ev.get("date")
+            date_str = ev.get("date") or ev.get("datetime") or ev.get("start")
             if not date_str:
                 continue
 
-            try:
-                ev_dt = datetime.fromisoformat(date_str)
-            except Exception:
+            ev_dt = None
+
+            # Try fromisoformat directly and with 'Z' -> +00:00 replacement
+            try_strings = [date_str]
+            if date_str.endswith("Z"):
+                try_strings.append(date_str.replace("Z", "+00:00"))
+
+            for ds in try_strings:
                 try:
-                    ev_dt = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S")
+                    ev_dt = datetime.fromisoformat(ds)
+                    break
                 except Exception:
-                    logger.warning(f"Unable to parse event date '{date_str}' for event {ev.get('id') or ev.get('_id')}")
                     continue
+
+            # Fallback to common strptime formats
+            if ev_dt is None:
+                fmts = [
+                    "%Y-%m-%dT%H:%M:%S",
+                    "%Y-%m-%dT%H:%M:%S.%f",
+                    "%Y-%m-%d %H:%M:%S",
+                    "%Y-%m-%d"
+                ]
+                for fmt in fmts:
+                    try:
+                        ev_dt = datetime.strptime(date_str, fmt)
+                        break
+                    except Exception:
+                        continue
+
+            if ev_dt is None:
+                logger.warning(f"Unable to parse event date '{date_str}' for event {ev.get('title') or ev.get('id') or ev.get('_id')}")
+                continue
 
             if ev_dt.tzinfo is None:
                 ev_dt = ev_dt.replace(tzinfo=timezone.utc)
 
             if now - ev_dt > timedelta(minutes=10):
-                event_id = ev.get("id") or ev.get("_id")
-                event_title = ev.get("title", str(event_id))
-                if not event_id:
-                    logger.warning(f"No id found for expired event: {event_title}")
+                # Try deleting by title first, then id/_id as fallback
+                title = ev.get("title")
+                id_ = ev.get("id") or ev.get("_id")
+                candidates = []
+                if title:
+                    candidates.append(title)
+                if id_:
+                    candidates.append(id_)
+
+                if not candidates:
+                    logger.warning(f"No identifier found for expired event (date={date_str}).")
                     continue
-                try:
-                    deleted = await api.delete_event(event_id)
+
+                deleted = False
+                for ident in candidates:
+                    try:
+                        deleted = await api.delete_event(ident)
+                    except Exception as exc:
+                        logger.error(f"Error deleting event {ident}: {exc}")
+                        deleted = False
+
                     if deleted:
-                        logger.info(f"Pruned event {event_id} ({event_title}) — ended >10 minutes ago.")
+                        event_title = title or str(ident)
+                        logger.info(f"Pruned event ({event_title}) — ended >10 minutes ago.")
                         channel = bot.get_channel(EVENTS_CHANNEL_ID)
                         if channel:
                             try:
-                                await channel.send(f"🗑️ Event **{event_title}** has been removed (ended >10 minutes ago).")
+                                await channel.send(f"🗑️ Event **{event_title}** has been removed (ended >1 hour ago).")
                             except Exception as send_exc:
                                 logger.debug(f"Couldn't notify channel about pruned event: {send_exc}")
+                        break
                     else:
-                        logger.warning(f"API refused to delete event {event_id}")
-                except Exception as exc:
-                    logger.error(f"Error deleting event {event_id}: {exc}")
+                        logger.debug(f"API refused to delete event using identifier: {ident}")
+
+                if not deleted:
+                    logger.warning(f"Failed to delete expired event (tried identifiers: {candidates})")
 
 
 scheduler.add_job(prune_finished_events, IntervalTrigger(seconds=60))
@@ -264,7 +306,7 @@ async def send_daily_fact():
     else:
         await channel.send("Couldn't fetch a fact today — please check the API.")
 
-scheduler.add_job(send_daily_fact, CronTrigger(hour=7, minute=00, timezone="Africa/Algiers"))
+scheduler.add_job(send_daily_fact, CronTrigger(hour=18, minute=30, timezone="Africa/Algiers"))
 
 
 # /cyberjoke — random joke
